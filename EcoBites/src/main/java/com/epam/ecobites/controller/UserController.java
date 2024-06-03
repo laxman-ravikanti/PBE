@@ -1,5 +1,6 @@
 package com.epam.ecobites.controller;
 
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,22 +12,32 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import org.springframework.web.server.ResponseStatusException;
 
 import com.epam.ecobites.entity.User;
 import com.epam.ecobites.model.LoginDTO;
-import com.epam.ecobites.model.UserDTO;
+
 import com.epam.ecobites.service.JwtServiceImpl;
+
+import com.epam.ecobites.model.UserDto;
+
 import com.epam.ecobites.service.UserService;
 
 import jakarta.validation.Valid;
 
+
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/users")
+@RequestMapping("users")
+
 public class UserController {
 
 	@Autowired
@@ -38,11 +49,6 @@ public class UserController {
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
-	@PostMapping("/new")
-	public String addNewUser(@RequestBody @Valid User user) {
-		System.out.println(user.getEmailId() + " " + user.getPassword());
-		return userService.addUser(user);
-	}
 
 	@GetMapping("/all")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -102,32 +108,13 @@ public class UserController {
 	@PostMapping("/forgetpassword/{emailId}")
 	public ResponseEntity<String> forgetPassword(@PathVariable("emailId") String emailId){ 
 		return userService.forgetPasswordDetails(emailId);  
-	}
+	
 }
 
+	@PostMapping("/register")
+	public ResponseEntity<User> addUser(@RequestBody @Valid UserDto userDto) {
+		return new ResponseEntity<>(userService.registerUser(userDto), HttpStatus.CREATED);
+	}
 
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//if (userRepository.findByName(authRequest.getUsername()) != null) {
-//
-//	Authentication authentication = authenticationManager.authenticate(
-//			new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-//
-//	if (authentication.isAuthenticated()) {
-//		return jwtServiceImpl.generateToken(authRequest.getUsername());
-//	}
-//} 
-//throw new UsernameNotFoundException("Invalid user request !");

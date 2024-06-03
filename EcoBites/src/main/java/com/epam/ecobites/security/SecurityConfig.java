@@ -16,7 +16,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 import com.epam.ecobites.service.UserDetailsServiceImp;
+
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +33,27 @@ public class SecurityConfig {
 	@Autowired
 	private  JwtAuthenticationFilter jwtAuthenticationFilter;
 
+	@Bean
+	
+	public UserDetailsService userDetailsService() {
+		return new UserInfoUserDetailsService();
+	}
+  
+  
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("users/**").allowedOrigins("http://localhost:3000")
+						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS").allowedHeaders("*")
+						.allowCredentials(true);
+			}
+
+		};
+  }
+
+
 	@Autowired
 	private CustomAuthEntryPoint authEntryPoint;
 
@@ -35,12 +61,9 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
 				.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(
-						req->req.requestMatchers("/users/login/**","/users/register/**", "/error/**")
-						.permitAll()
-						.requestMatchers("/admin_only/**").hasAuthority("ADMIN")
-						.anyRequest()
-						.authenticated())
+      .authorizeHttpRequests(requests -> requests.requestMatchers("/users/new", "/users/login" , "/users/forgetpassword/**","/error/**")
+				.permitAll())
+				.authorizeHttpRequests(requests -> requests.requestMatchers("/users/**").authenticated())
 				.userDetailsService(userDetailsServiceImp)
 				.sessionManagement(session->session
 						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -63,7 +86,9 @@ public class SecurityConfig {
 	}
 
 	@Bean
+
 	AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
 		return configuration.getAuthenticationManager();
 	}
+
 }
